@@ -2,6 +2,14 @@
 
 Simple interactive wrapper around [yt-dlp](https://github.com/yt-dlp/yt-dlp) for quick audio or video downloads.
 
+## Installation
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Configuration
 
 Runtime options can be preconfigured via a `config.toml` file in the project directory.
