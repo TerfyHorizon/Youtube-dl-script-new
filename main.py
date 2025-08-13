@@ -7,6 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 import re
+from urllib.parse import urlparse
 
 try:  # Python 3.11+
     import tomllib
@@ -37,6 +38,12 @@ def sanitize_filename(name: str) -> str:
     """
 
     return _INVALID_CHARS.sub("_", name).strip()
+
+
+def is_valid_url(url: str) -> bool:
+    """Return True if *url* contains a scheme and network location."""
+    parsed = urlparse(url)
+    return bool(parsed.scheme and parsed.netloc)
 
 
 def build_command(media_type: str, codec: str, url: str, cfg: dict | None = None) -> list[str]:
@@ -106,10 +113,13 @@ def main() -> None:
         print("Invalid codec selected.")
         sys.exit(1)
 
-    url = input("Enter video URL: ").strip()
-    if not url:
-        print("No URL provided.")
-        sys.exit(1)
+    while True:
+        url = input("Enter video URL: ").strip()
+        if is_valid_url(url):
+            break
+        print(
+            "Invalid URL. Please provide a valid URL including scheme (e.g., https://example.com)."
+        )
 
     try:
         cmd = build_command(media_type, codecs[codec], url, cfg)
