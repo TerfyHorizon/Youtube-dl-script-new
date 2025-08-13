@@ -30,6 +30,7 @@ output_template = "%(title)s.%(ext)s"
 ```
 
 Any missing value will trigger an interactive prompt when running `main.py`.
+Downloaded filenames are sanitized to remove characters invalid on common filesystems.
 
 ## Usage
 
@@ -37,4 +38,12 @@ Run the downloader:
 
 ```bash
 python main.py
+```
+
+## Testing
+
+Run the unit tests with [pytest](https://docs.pytest.org/):
+
+```bash
+pytest
 ```

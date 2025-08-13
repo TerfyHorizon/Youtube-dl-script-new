@@ -1,0 +1,18 @@
+# Example configuration for the yt-dlp helper
+# Copy this file to `config.toml` and adjust the values as needed.
+
+[paths]
+# Directory where downloaded video files will be stored
+video = "downloads/videos"
+# Directory where downloaded audio files will be stored
+audio = "downloads/audio"
+
+[defaults]
+# Default media type to download ("video" or "audio")
+media_type = "video"
+# Preferred codec when downloading videos
+video_codec = "mp4"
+# Preferred codec when downloading audio
+audio_codec = "mp3"
+# Optional yt-dlp output template. See yt-dlp documentation for placeholders.
+output_template = "%(title)s.%(ext)s"

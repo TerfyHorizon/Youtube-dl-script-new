@@ -1,2 +1,3 @@
 yt-dlp
 tomli; python_version < "3.11"
+pytest
