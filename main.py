@@ -100,10 +100,8 @@ def main() -> None:
 
     for name in codecs:
         print(f"- {name}")
-
-    codec = default_codec
-    if codec not in codecs:
-        codec = input("Choose codec: ").strip().lower()
+    codec = input(f"Choose codec [{default_codec}]: ").strip().lower()
+    codec = codec or default_codec
     if codec not in codecs:
         print("Invalid codec selected.")
         sys.exit(1)

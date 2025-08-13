@@ -1,8 +1,12 @@
 from pathlib import Path
 import sys
+import builtins
+import subprocess
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import main
 from main import load_config, build_command, sanitize_filename
 
 
@@ -65,3 +69,30 @@ def test_build_command_audio():
 def test_sanitize_filename():
     name = "bad:name?file*.mp3"
     assert sanitize_filename(name) == "bad_name_file_.mp3"
+
+
+def test_main_uses_default_codec(monkeypatch):
+    cfg = {"defaults": {"media_type": "audio", "audio_codec": "mp3"}}
+    monkeypatch.setattr(main, "load_config", lambda: cfg)
+    inputs = iter(["", "http://example.com"])
+    monkeypatch.setattr(builtins, "input", lambda _: next(inputs))
+    recorded = {}
+
+    def fake_run(cmd, check):
+        recorded["cmd"] = cmd
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    main.main()
+    assert recorded["cmd"][recorded["cmd"].index("--audio-format") + 1] == "mp3"
+
+
+def test_main_invalid_codec(monkeypatch):
+    cfg = {"defaults": {"media_type": "audio", "audio_codec": "mp3"}}
+    monkeypatch.setattr(main, "load_config", lambda: cfg)
+    monkeypatch.setattr(builtins, "input", lambda _: "wav")
+    monkeypatch.setattr(
+        subprocess, "run", lambda *args, **kwargs: pytest.fail("should not run")
+    )
+    with pytest.raises(SystemExit) as exc:
+        main.main()
+    assert exc.value.code == 1
