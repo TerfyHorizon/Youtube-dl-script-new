@@ -1,0 +1,18 @@
+# Sample configuration for the yt-dlp helper
+# Customize download paths and default codecs.
+
+[paths]
+# Where to save downloaded videos
+video = "downloads/videos"
+# Where to save downloaded audio files
+audio = "downloads/audio"
+
+[defaults]
+# Default media type: "video" or "audio"
+media_type = "video"
+# Preferred video codec when downloading videos
+video_codec = "mp4"
+# Preferred audio codec when downloading audio
+audio_codec = "mp3"
+# Optional yt-dlp output template
+output_template = "%(title)s.%(ext)s"
