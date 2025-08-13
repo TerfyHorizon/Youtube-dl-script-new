@@ -6,6 +6,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from pathlib import Path
+import re
 
 try:  # Python 3.11+
     import tomllib
@@ -26,6 +27,54 @@ def load_config(path: str = "config.toml") -> dict:
         return {}
 
 
+_INVALID_CHARS = re.compile(r'[<>:"\\|?*]')
+
+
+def sanitize_filename(name: str) -> str:
+    """Return *name* with characters invalid on common filesystems replaced.
+
+    This helps keep downloads portable across different operating systems.
+    """
+
+    return _INVALID_CHARS.sub("_", name).strip()
+
+
+def build_command(media_type: str, codec: str, url: str, cfg: dict | None = None) -> list[str]:
+    """Assemble the yt-dlp command based on the provided options.
+
+    Parameters
+    ----------
+    media_type:
+        Either ``"video"`` or ``"audio"``.
+    codec:
+        Desired codec or file extension for the media.
+    url:
+        URL to download.
+    cfg:
+        Optional configuration dictionary loaded from :func:`load_config`.
+    """
+
+    cfg = cfg or {}
+    cmd = ["yt-dlp", "--restrict-filenames"]
+
+    key = "video" if media_type == "video" else "audio"
+    download_path = cfg.get("paths", {}).get(key)
+    if download_path:
+        cmd.extend(["-P", Path(download_path).expanduser().as_posix()])
+
+    output_template = cfg.get("defaults", {}).get("output_template")
+    if output_template:
+        cmd.extend(["-o", sanitize_filename(output_template)])
+
+    if media_type == "video":
+        fmt = f"bestvideo[ext={codec}]+bestaudio/best"
+        cmd.extend(["-f", fmt, url])
+    else:
+        cmd.extend(["-x", "--audio-format", codec, url])
+
+    return cmd
+
+
 def main() -> None:
     """Run the interactive downloader."""
     print("========== YT-DLP Helper ==========")
@@ -44,12 +93,10 @@ def main() -> None:
         codecs = {"mp4": "mp4", "webm": "webm"}
         print("Available video codecs:")
         default_codec = cfg.get("defaults", {}).get("video_codec", "").lower()
-        download_path = cfg.get("paths", {}).get("video")
     else:
         codecs = {"mp3": "mp3", "m4a": "m4a", "flac": "flac"}
         print("Available audio codecs:")
         default_codec = cfg.get("defaults", {}).get("audio_codec", "").lower()
-        download_path = cfg.get("paths", {}).get("audio")
 
     for name in codecs:
         print(f"- {name}")
@@ -66,21 +113,8 @@ def main() -> None:
         print("No URL provided.")
         sys.exit(1)
 
-    cmd = ["yt-dlp"]
-    if download_path:
-        cmd.extend(["-P", Path(download_path).expanduser().as_posix()])
-
-    output_template = cfg.get("defaults", {}).get("output_template")
-    if output_template:
-        cmd.extend(["-o", output_template])
-
     try:
-        if media_type == "video":
-            fmt = f"bestvideo[ext={codecs[codec]}]+bestaudio/best"
-            cmd.extend(["-f", fmt, url])
-        else:
-            cmd.extend(["-x", "--audio-format", codecs[codec], url])
-
+        cmd = build_command(media_type, codecs[codec], url, cfg)
         print("Running:", " ".join(cmd))
         subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as exc:
