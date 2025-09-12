@@ -3,13 +3,13 @@
 
 [paths]
 # Directory where downloaded video files will be stored
-video = "downloads/videos"
+video = "videos"
 # Directory where downloaded audio files will be stored
-audio = "downloads/audio"
+audio = "audio"
 
 [defaults]
 # Default media type to download ("video" or "audio")
-media_type = "video"
+media_type = ""
 # Preferred codec when downloading videos
 video_codec = "mp4"
 # Preferred codec when downloading audio
